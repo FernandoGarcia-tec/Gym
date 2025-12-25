@@ -1,725 +1,818 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>PRO-Tracker V2 | Elite Hypertrophy</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  
-  <style>
-    :root {
-      /* Palette - Dark Mode Default logic implied, but variables handled for switching */
-      --primary: #3b82f6;
-      --primary-glow: rgba(59, 130, 246, 0.5);
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      
-      --bg-body: #0f172a;
-      --bg-card: #1e293b;
-      --bg-input: #334155;
-      --border: #334155;
-      
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
-      
-      --font-main: 'Plus Jakarta Sans', sans-serif;
-      --nav-height: 70px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+    <title>TITAN OS | Omega Edition</title>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/dumbbell.png">
 
-    /* Light Mode Overrides */
-    body.light-mode {
-      --bg-body: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-input: #f1f5f9;
-      --border: #e2e8f0;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-    }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-    
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: var(--font-main);
-      background-color: var(--bg-body);
-      color: var(--text-main);
-      padding-bottom: 140px; /* Space for floating nav */
-      transition: background-color 0.3s ease, color 0.3s ease;
-      overflow-x: hidden;
-    }
+    <style>
+        :root {
+            --bg-body: #000000;
+            --bg-card: #121212;
+            --bg-input: #1c1c1e;
+            --primary: #6366f1; /* Indigo */
+            --gold: #fbbf24;
+            --success: #10b981;
+            --danger: #ef4444;
+            --purple: #a855f7;
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
+            --border: rgba(255,255,255,0.08);
+            --radius: 18px;
+            --nav-height: 80px;
+        }
 
-    /* --- Typography & Utils --- */
-    h1, h2, h3 { margin: 0; letter-spacing: -0.03em; }
-    .badge {
-      display: inline-flex; align-items: center; padding: 4px 8px;
-      border-radius: 6px; font-size: 0.75rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .badge-primary { background: rgba(59, 130, 246, 0.15); color: var(--primary); }
-    
-    /* --- Header --- */
-    .app-header {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    body.light-mode .app-header { background: rgba(255, 255, 255, 0.85); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
+        
+        body {
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body); color: var(--text-main);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
 
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-icon { 
-      width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), #6366f1);
-      border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;
-      font-size: 1.2rem; box-shadow: 0 4px 12px var(--primary-glow);
-    }
-    .brand-text h1 { font-size: 1.25rem; font-weight: 800; }
-    .brand-text span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; display: block; }
+        /* --- UI Core --- */
+        .view {
+            display: none; flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: 20px; padding-bottom: 120px;
+            animation: fadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .header-actions button {
-      background: transparent; border: none; color: var(--text-main); font-size: 1.2rem; cursor: pointer; padding: 8px;
-    }
+        h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        .subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
 
-    /* --- Container --- */
-    .container { max-width: 800px; margin: 0 auto; padding: 20px 16px; }
+        /* --- Cards --- */
+        .card {
+            background: var(--bg-card); border-radius: var(--radius); padding: 20px;
+            margin-bottom: 16px; border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); position: relative;
+        }
 
-    /* --- Info Cards --- */
-    .stat-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .stat-card h2 { font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .stat-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+        /* --- Coach Tips Box --- */
+        .coach-box {
+            background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, rgba(168,85,247,0.1) 100%);
+            border-left: 3px solid var(--primary);
+            padding: 12px 15px; border-radius: 10px; margin-bottom: 15px;
+            font-size: 0.85rem; color: #e0e7ff; display: flex; gap: 10px; align-items: start;
+        }
 
-    /* --- Workout Day Section --- */
-    .workout-day { margin-bottom: 32px; animation: slideUp 0.6s ease-out; }
-    .day-header { 
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; 
-    }
-    .day-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
-    .day-progress { font-size: 0.9rem; color: var(--primary); font-weight: 600; }
+        /* --- Badges --- */
+        .badge-suggestion {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(251, 191, 36, 0.1); color: var(--gold);
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+            margin-top: 5px; border: 1px solid rgba(251, 191, 36, 0.2);
+        }
 
-    /* --- Exercises --- */
-    .exercise-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 16px;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .exercise-card.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-    
-    .exercise-header {
-      padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(to right, transparent, rgba(59, 130, 246, 0.02));
-    }
-    .ex-info h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
-    .ex-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; }
-    .volume-tag { font-size: 0.75rem; color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; }
+        .badge-1rm {
+            font-size: 0.65rem; color: var(--purple); background: rgba(168, 85, 247, 0.1);
+            padding: 2px 6px; border-radius: 4px; position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+            white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        }
+        .input-wrapper:focus-within .badge-1rm, .smart-input:not(:placeholder-shown) + .badge-1rm { opacity: 1; }
 
-    .chevron { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-muted); }
-    .exercise-card.open .chevron { transform: rotate(180deg); color: var(--primary); }
+        /* --- Inputs --- */
+        .input-row { display: grid; grid-template-columns: 24px 1.2fr 1fr 0.6fr 44px; gap: 8px; align-items: center; margin-bottom: 15px; position: relative; }
+        
+        .input-wrapper { position: relative; width: 100%; }
+        .smart-input {
+            width: 100%; background: var(--bg-input); border: 1px solid transparent;
+            color: white; padding: 12px; border-radius: 10px; font-size: 1.1rem; 
+            text-align: center; font-weight: 600; transition: border 0.2s;
+        }
+        .smart-input:focus { border-color: var(--primary); background: #252525; }
+        .smart-input::placeholder { color: #444; }
 
-    .exercise-body { 
-      max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0;
-    }
-    .exercise-card.open .exercise-body { max-height: 1200px; opacity: 1; }
+        .rpe-input {
+            width: 100%; background: var(--bg-input); border: none; color: var(--text-muted);
+            font-size: 0.8rem; text-align: center; border-radius: 8px; padding: 14px 0;
+        }
 
-    .ex-content-inner { padding: 0 20px 20px; }
+        .input-tool-icon {
+            position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+            font-size: 0.8rem; color: var(--text-muted); opacity: 0.5; padding: 5px; cursor: pointer;
+        }
 
-    /* --- Visuals (SVG) --- */
-    .visual-guide {
-      display: flex; gap: 16px; margin: 16px 0; background: var(--bg-body);
-      padding: 12px; border-radius: var(--radius-md); align-items: center;
-    }
-    .visual-svg { width: 70px; height: 70px; flex-shrink: 0; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); padding: 4px; }
-    .visual-svg svg { width: 100%; height: 100%; }
-    .visual-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; flex: 1; }
-    
-    /* SVG Styling */
-    .svg-bar { stroke: var(--text-main); stroke-width: 4; stroke-linecap: round; }
-    .svg-body { fill: var(--text-muted); opacity: 0.5; }
-    .svg-highlight { fill: var(--primary); }
-    .svg-bench { fill: var(--border); }
+        .checkbox {
+            width: 44px; height: 44px; border-radius: 12px; background: var(--bg-input);
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            color: transparent; border: 1px solid var(--border); transition: all 0.2s;
+        }
+        .checkbox.checked { background: var(--success); border-color: var(--success); color: #000; }
 
-    /* --- Sets Table --- */
-    .sets-container { margin-top: 10px; }
-    .set-header-row {
-      display: grid; grid-template-columns: 30px 1fr 1fr 40px 30px; gap: 8px;
-      margin-bottom: 8px; font-size: 0.75rem; color: var(--text-muted); text-align: center; font-weight: 600;
-    }
+        /* --- Achievements --- */
+        .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .trophy-card {
+            background: var(--bg-input); border-radius: 12px; padding: 15px; text-align: center;
+            opacity: 0.4; filter: grayscale(1); transition: all 0.3s; border: 1px solid transparent;
+        }
+        .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--gold); background: rgba(251, 191, 36, 0.05); }
+        .trophy-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
 
-    .set-row {
-      display: grid; grid-template-columns: 30px 1fr 1fr 40px 30px; gap: 8px;
-      align-items: center; margin-bottom: 8px; animation: fadeIn 0.3s;
-      position: relative;
-    }
-    
-    .set-num { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-align: center; }
-    
-    .input-wrapper { position: relative; }
-    .input-wrapper input {
-      width: 100%; background: var(--bg-input); border: 1px solid transparent;
-      color: var(--text-main); padding: 10px 0; text-align: center; font-weight: 600; font-size: 1rem;
-      border-radius: var(--radius-sm); transition: all 0.2s;
-    }
-    .input-wrapper input:focus { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-    .input-wrapper::after {
-      content: attr(data-unit); position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-      font-size: 0.7rem; color: var(--text-muted); opacity: 0.5; pointer-events: none;
-    }
+        /* --- Buttons --- */
+        .btn {
+            width: 100%; padding: 16px; border-radius: 14px; border: none;
+            font-weight: 600; font-size: 1rem; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            background: var(--primary); color: white; transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: none; font-size: 0.9rem; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-input); color: var(--text-muted); display: flex; align-items: center; justify-content: center; border:none;}
 
-    /* Checkbox Styles */
-    .check-wrapper { display: flex; justify-content: center; align-items: center; }
-    .custom-checkbox {
-      appearance: none; width: 28px; height: 28px; border: 2px solid var(--border);
-      border-radius: 8px; cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      background: var(--bg-input);
-    }
-    .custom-checkbox:checked { background: var(--success); border-color: var(--success); transform: scale(1.05); }
-    .custom-checkbox::before {
-      content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-      color: white; font-size: 14px; transition: transform 0.2s;
-    }
-    .custom-checkbox:checked::before { transform: translate(-50%, -50%) scale(1); }
+        /* --- Timer --- */
+        #active-timer {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-200%);
+            background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px);
+            padding: 8px 20px; border-radius: 50px; border: 1px solid var(--border);
+            display: flex; gap: 10px; align-items: center; z-index: 2000;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6); transition: transform 0.4s;
+        }
+        #active-timer.show { transform: translateX(-50%) translateY(0); }
 
-    /* Delete Button */
-    .btn-delete {
-      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; opacity: 0.5; transition: opacity 0.2s;
-    }
-    .btn-delete:hover { color: var(--danger); opacity: 1; }
+        /* --- Nav --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 85px;
+            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr);
+            padding-bottom: 25px; z-index: 100;
+        }
+        .nav-btn {
+            background: none; border: none; color: #52525b; font-size: 0.65rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+        }
+        .nav-btn.active { color: var(--primary); }
+        .nav-btn i { font-size: 1.4rem; transition: transform 0.2s; }
+        .nav-btn.active i { transform: translateY(-3px); color: white; }
 
-    .prev-data { 
-      grid-column: 1 / -1; font-size: 0.75rem; color: var(--text-muted); 
-      margin-top: -4px; margin-bottom: 8px; padding-left: 38px; font-style: italic; display: flex; gap: 8px;
-    }
-    .pr-badge { color: var(--warning); font-weight: 700; display: none; }
-    .pr-badge.show { display: inline; animation: popIn 0.5s; }
+        /* --- Modal --- */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 3000; display: none;
+            justify-content: center; align-items: flex-end; backdrop-filter: blur(4px);
+        }
+        .modal-sheet {
+            background: #18181b; width: 100%; max-width: 600px;
+            border-radius: 24px 24px 0 0; padding: 24px; border-top: 1px solid var(--border);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-    /* --- Actions --- */
-    .action-row { margin-top: 16px; display: flex; gap: 12px; }
-    .btn {
-      padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.9rem;
-      border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.1s, filter 0.2s;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); width: 100%; justify-content: center; }
-    .btn-outline:hover { background: var(--bg-input); }
-    
-    /* --- Floating Nav --- */
-    .floating-nav {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 8px 12px; border-radius: 50px;
-      display: flex; gap: 8px; align-items: center;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      z-index: 100;
-      width: max-content;
-    }
-    body.light-mode .floating-nav { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.05); }
-
-    .nav-btn {
-      width: 44px; height: 44px; border-radius: 50%; border: none;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
-      background: transparent; color: var(--text-muted);
-    }
-    .nav-btn.active { background: var(--bg-body); color: var(--text-main); }
-    .nav-btn.primary { background: var(--primary); color: white; width: 50px; height: 50px; box-shadow: 0 4px 12px var(--primary-glow); transform: translateY(-4px); }
-    .nav-btn.primary:hover { transform: translateY(-6px); box-shadow: 0 6px 16px var(--primary-glow); }
-
-    /* --- Timer Overlay --- */
-    .timer-overlay {
-      position: fixed; bottom: 100px; right: 20px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      padding: 12px 20px; border-radius: var(--radius-lg);
-      display: flex; align-items: center; gap: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      transform: translateY(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 90;
-    }
-    .timer-overlay.show { transform: translateY(0); }
-    .timer-display { font-family: 'Courier New', monospace; font-weight: 700; font-size: 1.2rem; color: var(--text-main); }
-    .timer-controls button { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
-    .timer-controls button:hover { color: var(--danger); border-color: var(--danger); }
-
-    /* --- Animations --- */
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
-
-    /* --- Utilities --- */
-    .hidden { display: none !important; }
-
-  </style>
+        .setup-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .setup-item { background: var(--bg-input); border: 2px solid transparent; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; }
+        .setup-item.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.15); color: white; }
+        
+        .hidden { display: none !important; }
+    </style>
 </head>
-<body class="dark-mode">
+<body>
 
-  <header class="app-header">
-    <div class="brand">
-      <div class="brand-icon"><i class="fas fa-dumbbell"></i></div>
-      <div class="brand-text">
-        <h1>PRO-Tracker</h1>
-        <span>Elite Hypertrophy</span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button id="theme-toggle"><i class="fas fa-sun"></i></button>
-    </div>
-  </header>
-
-  <div class="container">
-    
-    <div class="stat-card">
-      <h2><i class="fas fa-chart-line" style="color:var(--success)"></i> Progreso Semanal</h2>
-      <p>Has completado <strong>0</strong> de <strong>5</strong> sesiones esta semana. La consistencia es la clave del crecimiento.</p>
-      <div style="height: 6px; background: var(--bg-input); border-radius: 3px; margin-top: 12px; overflow: hidden;">
-        <div id="weekly-progress-bar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.5s;"></div>
-      </div>
+    <div id="active-timer">
+        <i class="fas fa-stopwatch" style="color:var(--primary)"></i>
+        <span id="timer-text" style="font-family: monospace; font-size: 1.1rem; font-weight: 700;">00:00</span>
+        <i class="fas fa-times" style="opacity:0.5; margin-left:8px;" onclick="app.timer.stop()"></i>
     </div>
 
-    <div id="workout-container">
-      </div>
-
-  </div>
-
-  <div class="floating-nav">
-    <button class="nav-btn" onclick="app.ui.scrollToTop()"><i class="fas fa-arrow-up"></i></button>
-    <button class="nav-btn primary" id="btn-finish-workout"><i class="fas fa-check"></i></button>
-    <button class="nav-btn" id="btn-settings"><i class="fas fa-cog"></i></button>
-  </div>
-
-  <div class="timer-overlay" id="rest-timer">
-    <i class="fas fa-stopwatch" style="color: var(--primary)"></i>
-    <span class="timer-display" id="timer-val">00:00</span>
-    <div class="timer-controls">
-      <button onclick="app.timer.add(10)">+10</button>
-      <button onclick="app.timer.stop()"><i class="fas fa-times"></i></button>
+    <div id="view-setup" class="view">
+        <div style="text-align: center; margin-top: 60px;">
+            <i class="fas fa-atom" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h1>TITAN OS</h1>
+            <p class="subtitle">Omega Edition</p>
+        </div>
+        
+        <div class="card" style="margin-top: 40px;">
+            <h3>Configuración Inicial</h3>
+            <input type="text" id="setup-name" class="smart-input" placeholder="Tu Nombre" style="margin: 15px 0; text-align: left;">
+            <input type="number" id="setup-weight" class="smart-input" placeholder="Peso Corporal (kg)" style="margin-bottom: 15px; text-align: left;">
+            
+            <h3>Selecciona tu Objetivo</h3>
+            <div class="setup-grid">
+                <div class="setup-item" onclick="app.setup.select('fuerza', this)">
+                    <i class="fas fa-dumbbell"></i><br><span style="font-size:0.8rem">Fuerza</span>
+                </div>
+                <div class="setup-item" onclick="app.setup.select('hipertrofia', this)">
+                    <i class="fas fa-child-reaching"></i><br><span style="font-size:0.8rem">Músculo</span>
+                </div>
+                <div class="setup-item" onclick="app.setup.select('resistencia', this)">
+                    <i class="fas fa-heart-pulse"></i><br><span style="font-size:0.8rem">Cardio</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn" onclick="app.setup.finish()">INICIAR SISTEMA</button>
     </div>
-  </div>
+
+    <div id="view-home" class="view">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h2 id="user-name">Hola</h2>
+                <div class="subtitle" id="user-goal">Objetivo: ...</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="subtitle">NIVEL</div>
+                <h2 style="color: var(--primary);" id="user-lvl">1</h2>
+            </div>
+        </header>
+
+        <div class="card" style="padding: 15px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h3>Volumen Semanal</h3>
+                <span id="week-vol" class="subtitle" style="color:var(--success)">0 kg</span>
+            </div>
+            <div style="height: 100px; width: 100%;">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px;">Plan Asignado</h3>
+        <div id="routines-list"></div>
+
+        <button class="btn btn-outline" style="border-style: dashed; opacity: 0.6; margin-top: 10px;" onclick="app.routines.create()">
+            <i class="fas fa-plus"></i> Rutina Personalizada
+        </button>
+    </div>
+
+    <div id="view-session" class="view">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button class="btn-ghost" onclick="app.session.minimize()"><i class="fas fa-chevron-down fa-lg"></i></button>
+            <h3 id="session-title">Entrenamiento</h3>
+            <button class="btn-ghost" style="color: var(--success);" onclick="app.session.finish()"><i class="fas fa-check fa-lg"></i></button>
+        </div>
+
+        <div class="coach-box" id="global-coach-tip">
+            <i class="fas fa-robot"></i>
+            <span id="coach-tip-text">Analizando biomecánica...</span>
+        </div>
+
+        <div id="session-container"></div>
+
+        <button class="btn btn-outline" style="margin-top: 20px;" onclick="app.session.addExercisePrompt()">
+            <i class="fas fa-plus"></i> Añadir Ejercicio
+        </button>
+    </div>
+
+    <div id="view-achievements" class="view">
+        <h2 style="margin-bottom: 10px;">Sala de Trofeos</h2>
+        <div style="margin-bottom:20px; color:var(--text-muted); font-size:0.9rem;">Desbloquea medallas co teu esforzo.</div>
+        <div class="trophy-grid" id="achievements-list"></div>
+    </div>
+
+    <div id="view-profile" class="view">
+        <h2 style="margin-bottom: 20px;">Perfil</h2>
+        
+        <div class="card">
+            <h3>Os Meus Datos</h3>
+            <div style="margin: 15px 0;">
+                <label style="color:#888; font-size:0.8rem;">Nome</label>
+                <input type="text" id="edit-name" class="smart-input" style="text-align:left; margin-bottom:10px;">
+                <label style="color:#888; font-size:0.8rem;">Peso (kg)</label>
+                <input type="number" id="edit-weight" class="smart-input" style="text-align:left;">
+            </div>
+            <button class="btn" onclick="app.profile.update()">Gardar Cambios</button>
+        </div>
+
+        <div class="card">
+            <h3>Xestión de Datos</h3>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="app.data.export()">Exportar Copia</button>
+            <input type="file" id="import-file" hidden onchange="app.data.import(this)">
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="document.getElementById('import-file').click()">Importar Copia</button>
+            <button class="btn btn-outline" style="margin-top: 10px; border-color: var(--danger); color: var(--danger);" onclick="app.data.reset()">Reiniciar Todo</button>
+        </div>
+    </div>
+
+    <div id="view-history" class="view">
+        <h2 style="margin-bottom: 20px;">Historial</h2>
+        <div id="history-list"></div>
+    </div>
+
+    <nav class="bottom-nav" id="main-nav">
+        <button class="nav-btn active" onclick="app.nav.go('home')"><i class="fas fa-home"></i><span>Inicio</span></button>
+        <button class="nav-btn" onclick="app.nav.go('history')"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></button>
+        <button class="nav-btn" onclick="app.nav.go('achievements')"><i class="fas fa-trophy"></i><span>Logros</span></button>
+        <button class="nav-btn" onclick="app.nav.go('profile')"><i class="fas fa-user-gear"></i><span>Perfil</span></button>
+    </nav>
+
+    <div class="modal-backdrop" id="modal-plates" onclick="if(event.target===this) this.style.display='none'">
+        <div class="modal-sheet">
+            <h3 style="text-align:center;">Cargar Barra (20kg)</h3>
+            <div id="plate-vis" style="display: flex; gap: 2px; height: 60px; align-items: center; justify-content: center; background: #000; border-radius: 8px; margin: 20px 0;"></div>
+            <button class="btn" onclick="document.getElementById('modal-plates').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="modal-share" onclick="if(event.target===this) this.style.display='none'">
+        <div class="modal-sheet">
+            <h3 style="text-align:center; margin-bottom: 10px;">Resumo do Adestramento</h3>
+            <textarea id="share-text" style="width:100%; height:150px; background:#222; color:#fff; border:1px solid #444; border-radius:8px; padding:10px; font-family:monospace;" readonly></textarea>
+            <button class="btn" style="margin-top:10px;" onclick="app.utils.copyShare()">Copiar Texto</button>
+        </div>
+    </div>
 
 <script>
 /**
- * DATA DEFINITION
- * Defined as a structured object for easier editing and expansion.
+ * TITAN OS - OMEGA EDITION (v15)
+ * Definitive Edition.
  */
-const WORKOUT_DATA = [
-  {
-    id: "day1",
-    title: "Día 1: Torso - Fuerza",
-    icon: "fa-chess-king",
-    exercises: [
-      { id: "bench", name: "Press de Banca", sets: 4, reps: "5-8", type: "weight", guide: "Baja controlando 3 segs, explota al subir." },
-      { id: "row", name: "Remo Pendlay", sets: 3, reps: "6-10", type: "weight", guide: "Torso paralelo al suelo, sin inercia." },
-      { id: "ohp", name: "Press Militar", sets: 3, reps: "6-10", type: "weight", guide: "Aprieta glúteos y abdomen." },
-      { id: "dips", name: "Fondos", sets: 3, reps: "8-12", type: "weight", guide: "Inclínate para pecho, vertical para tríceps." },
-      { id: "facepull", name: "Face Pulls", sets: 3, reps: "12-15", type: "weight", guide: "Rotación externa al final del movimiento." }
+
+const COACHING_DB = {
+    'Sentadilla': { tip: "Rodillas hacia fuera, mirada al frente.", tempo: "3-1-X" },
+    'Press Banca': { tip: "Retrae escápulas, codos a 45º.", tempo: "2-1-1" },
+    'Peso Muerto': { tip: "Barra pegada a las tibias, espalda neutra.", tempo: "X-1-3" },
+    'Press Militar': { tip: "Aprieta glúteos y abdomen.", tempo: "2-0-1" },
+    'Dominadas': { tip: "Inicia bajando los hombros.", tempo: "2-1-1" },
+    'Remo': { tip: "Barra a la cadera, no al pecho.", tempo: "2-1-1" },
+    'Bíceps': { tip: "Codos pegados al cuerpo.", tempo: "3-0-1" },
+    'Tríceps': { tip: "Bloquea el codo al final.", tempo: "2-0-1" },
+    'Prensa': { tip: "No bloquees rodillas al subir.", tempo: "3-0-1" },
+    'Elevaciones': { tip: "Codos lideran el movimiento.", tempo: "2-1-2" }
+};
+
+const TEMPLATES = {
+    fuerza: [
+        { id: 'str_a', name: 'Torso Fuerza', exercises: ['Press Banca', 'Remo con Barra', 'Press Militar', 'Dominadas'] },
+        { id: 'str_b', name: 'Pierna Fuerza', exercises: ['Sentadilla', 'Peso Muerto', 'Prensa', 'Plancha'] }
+    ],
+    hipertrofia: [
+        { id: 'hyp_push', name: 'Push (Empuje)', exercises: ['Press Banca', 'Press Inclinado', 'Elevaciones Laterales', 'Extensión Tríceps'] },
+        { id: 'hyp_pull', name: 'Pull (Tracción)', exercises: ['Dominadas', 'Remo Polea', 'Face Pull', 'Curl Bíceps'] },
+        { id: 'hyp_legs', name: 'Legs (Pierna)', exercises: ['Sentadilla Hack', 'Peso Muerto Rumano', 'Extensiones', 'Gemelos'] }
+    ],
+    resistencia: [
+        { id: 'end_a', name: 'Full Body Circuito A', exercises: ['Goblet Squat', 'Flexiones', 'Remo TRX', 'Burpees'] },
+        { id: 'end_b', name: 'Full Body Circuito B', exercises: ['Zancadas', 'Press Militar', 'Jalón al Pecho', 'Mountain Climbers'] }
     ]
-  },
-  {
-    id: "day2",
-    title: "Día 2: Pierna - Fuerza",
-    icon: "fa-bolt",
-    exercises: [
-      { id: "squat", name: "Sentadilla Libre", sets: 4, reps: "5-8", type: "weight", guide: "Rompe la paralela." },
-      { id: "rdl", name: "Peso Muerto Rumano", sets: 3, reps: "8-10", type: "weight", guide: "Cadera atrás, siente el estiramiento." },
-      { id: "legpress", name: "Prensa", sets: 3, reps: "10-12", type: "weight", guide: "No bloquees rodillas." },
-      { id: "plank", name: "Plancha", sets: 3, reps: "MAX", type: "time", guide: "Cuerpo como una tabla recta." }
-    ]
-  },
-  {
-    id: "day4",
-    title: "Día 4: Torso - Hipertrofia",
-    icon: "fa-layer-group",
-    exercises: [
-      { id: "pullup", name: "Dominadas", sets: 4, reps: "8-12", type: "weight", guide: "Rango completo de movimiento." },
-      { id: "incpress", name: "Press Inclinado", sets: 3, reps: "10-15", type: "weight", guide: "Mancuernas a 30 grados." },
-      { id: "latraise", name: "Elevaciones Laterales", sets: 4, reps: "12-20", type: "weight", guide: "Codos lideran el movimiento." },
-      { id: "curl", name: "Curl Bíceps", sets: 3, reps: "10-15", type: "weight", guide: "Codos pegados al cuerpo." }
-    ]
-  },
-  {
-      id: "day5",
-      title: "Día 5: Pierna - Hipertrofia",
-      icon: "fa-running",
-      exercises: [
-        { id: "hacksquat", name: "Sentadilla Hack", sets: 4, reps: "10-12", type: "weight", guide: "Profundidad máxima." },
-        { id: "legcurl", name: "Curl Femoral", sets: 4, reps: "12-15", type: "weight", guide: "Contrae 1 segundo arriba." },
-        { id: "lunges", name: "Zancadas", sets: 3, reps: "20", type: "weight", guide: "Pasos largos." }
-      ]
-  }
+};
+
+const SUBSTITUTES = {
+    'Press Banca': ['Press Mancuernas', 'Press Máquina', 'Fondos'],
+    'Sentadilla': ['Prensa', 'Sentadilla Hack', 'Zancadas'],
+    'Peso Muerto': ['Peso Muerto Rumano', 'Hip Thrust', 'Rack Pull'],
+    'Press Militar': ['Press Arnold', 'Elevaciones Laterales', 'Press Máquina'],
+    'Dominadas': ['Jalón al Pecho', 'Remo Máquina'],
+    'Remo con Barra': ['Remo Polea', 'Remo Mancuerna'],
+    'Curl Bíceps': ['Curl Martillo', 'Dominadas Supinas'],
+    'Extensión Tríceps': ['Press Francés', 'Fondos']
+};
+
+const ACHIEVEMENTS = [
+    { id: 'first_blood', icon: '🩸', title: 'Primera Sangre', desc: 'Completa tu primer entrenamiento', cond: (u,h) => h.length >= 1 },
+    { id: 'consistency', icon: '🔥', title: 'En Llamas', desc: 'Completa 5 entrenamientos', cond: (u,h) => h.length >= 5 },
+    { id: 'veteran', icon: '🎖️', title: 'Veterano', desc: 'Completa 20 entrenamientos', cond: (u,h) => h.length >= 20 },
+    { id: 'heavy_lifter', icon: '🦍', title: 'Bestia', desc: 'Mueve 10.000kg de volumen total', cond: (u,h) => u.totalVolume >= 10000 },
+    { id: 'level_5', icon: '⭐', title: 'Nivel 5', desc: 'Alcanza el nivel 5 de experiencia', cond: (u,h) => u.level >= 5 }
 ];
 
 const app = {
-    state: {
-        active: {}, // Current session data
-        history: {}, // Past sessions
-        timer: null,
-        timerVal: 0,
-        settings: {
-            restTime: 90, // seconds
-            theme: 'dark'
-        }
-    },
+    data: { user: {}, routines: [], history: [], activeSession: null, unlocked: [] },
 
     init() {
-        this.storage.load();
-        this.ui.render();
-        this.ui.applyTheme();
-        
-        // Listeners
-        document.getElementById('theme-toggle').addEventListener('click', () => this.ui.toggleTheme());
-        document.getElementById('btn-finish-workout').addEventListener('click', () => this.logic.finishWorkout());
-        document.getElementById('btn-settings').addEventListener('click', () => alert('Configuración próximamente: Exportar datos, cambiar tiempos de descanso.'));
-        
-        // Auto-save loop
-        setInterval(() => this.storage.save(), 5000);
-    },
-
-    logic: {
-        getHistory(exId, setIdx) {
-            // Returns the last performed data for this specific set/exercise
-            // For simplicity, just looks at the last saved session in history
-            const dates = Object.keys(app.state.history).sort().reverse();
-            if (dates.length === 0) return null;
-            
-            const lastSession = app.state.history[dates[0]];
-            if (!lastSession || !lastSession[exId]) return null;
-            
-            return lastSession[exId][setIdx] || null;
-        },
-
-        calculateVolume(exId) {
-            const container = document.querySelector(`.exercise-card[data-id="${exId}"]`);
-            if(!container) return 0;
-            let vol = 0;
-            container.querySelectorAll('.set-row').forEach(row => {
-                if(row.querySelector('.custom-checkbox').checked) {
-                    const w = parseFloat(row.querySelector('.inp-weight').value) || 0;
-                    const r = parseFloat(row.querySelector('.inp-reps').value) || 0;
-                    vol += (w * r);
-                }
-            });
-            return vol;
-        },
-
-        finishWorkout() {
-            if(confirm("¿Finalizar y guardar entrenamiento?")) {
-                const today = new Date().toISOString().split('T')[0];
-                app.state.history[today] = JSON.parse(JSON.stringify(app.state.active));
-                app.state.active = {}; // Reset current
-                app.storage.save();
+        const stored = localStorage.getItem('titan_omega_v15');
+        if (stored) {
+            try {
+                this.data = JSON.parse(stored);
+                if(!this.data.history) this.data.history = [];
+                if(!this.data.routines) this.data.routines = [];
+                if(!this.data.unlocked) this.data.unlocked = [];
+                if(this.data.user.totalVolume === undefined) this.data.user.totalVolume = 0;
                 
-                // Celebration
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                setTimeout(() => location.reload(), 2000);
-            }
+                this.nav.go('home');
+                this.home.render();
+            } catch (e) { this.data.reset(); }
+        } else {
+            this.nav.go('setup');
+        }
+    },
+    save() { localStorage.setItem('titan_omega_v15', JSON.stringify(this.data)); },
+
+    // --- SETUP ---
+    setup: {
+        choice: null,
+        select(c, el) {
+            this.choice = c;
+            document.querySelectorAll('.setup-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+        },
+        finish() {
+            const name = document.getElementById('setup-name').value || 'Atleta';
+            const weight = document.getElementById('setup-weight').value || 70;
+            if (!this.choice) return alert("Selecciona un objetivo.");
+            
+            app.data.user = { name, weight, goal: this.choice, level: 1, xp: 0, totalVolume: 0 };
+            app.data.routines = JSON.parse(JSON.stringify(TEMPLATES[this.choice]));
+            app.save();
+            app.nav.go('home');
+            app.home.render();
         }
     },
 
-    ui: {
-        toggleTheme() {
-            app.state.settings.theme = app.state.settings.theme === 'dark' ? 'light' : 'dark';
-            this.applyTheme();
-            app.storage.save();
-        },
-        
-        applyTheme() {
-            document.body.className = app.state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
-            const icon = document.querySelector('#theme-toggle i');
-            icon.className = app.state.settings.theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        },
+    // --- HOME ---
+    home: {
+        render() {
+            const u = app.data.user;
+            document.getElementById('user-name').innerText = `Hola, ${u.name}`;
+            document.getElementById('user-goal').innerText = `Enfoque: ${u.goal.toUpperCase()}`;
+            document.getElementById('user-lvl').innerText = u.level;
 
-        scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); },
+            const list = document.getElementById('routines-list');
+            list.innerHTML = '';
+            app.data.routines.forEach(r => {
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div><h3>${r.name}</h3><div class="subtitle">${r.exercises.length} Ejercicios</div></div>
+                        <button class="btn" style="width:50px; padding:0;" onclick="app.session.start('${r.id}')"><i class="fas fa-play"></i></button>
+                    </div>`;
+                list.appendChild(el);
+            });
+            this.renderChart();
+        },
+        renderChart() {
+            const ctx = document.getElementById('chart');
+            const h = app.data.history || [];
+            const last7 = h.slice(-7);
+            const data = last7.length ? last7.map(x => x.vol) : [0,0,0,0];
+            const labels = last7.length ? last7.map((_,i) => i+1) : ['','','',''];
+            document.getElementById('week-vol').innerText = (data.reduce((a,b)=>a+b,0)) + " kg";
+
+            if(window.chartInstance) window.chartInstance.destroy();
+            window.chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: [{ data, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.4 }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, maintainAspectRatio: false }
+            });
+        }
+    },
+
+    // --- SESSION ---
+    session: {
+        start(rid) {
+            const r = app.data.routines.find(x => x.id === rid);
+            if (!r) return;
+
+            const s = {
+                name: r.name,
+                startTime: Date.now(),
+                exercises: r.exercises.map(name => {
+                    const lastLog = app.utils.getLastLog(name);
+                    let suggestion = null;
+                    let ghostWeight = '';
+
+                    if (lastLog) {
+                        const maxW = Math.max(...lastLog.sets.map(s => parseFloat(s.w) || 0));
+                        if (maxW > 0) {
+                            suggestion = maxW + 2.5; 
+                            ghostWeight = maxW;
+                        }
+                    }
+
+                    const sets = [];
+                    for(let i=0; i<3; i++) {
+                        sets.push({ w: '', r: '', rpe: '', ghost: ghostWeight, done: false });
+                    }
+                    return { name, suggestion, sets };
+                })
+            };
+            app.data.activeSession = s;
+            app.nav.go('session');
+            document.getElementById('main-nav').classList.add('hidden');
+            
+            const tips = ["Controla la excéntrica.", "Hidrátate bien.", "Técnica > Peso.", "Descansa 90s en compuestos."];
+            document.getElementById('coach-tip-text').innerText = tips[Math.floor(Math.random()*tips.length)];
+            
+            this.render();
+        },
 
         render() {
-            const container = document.getElementById('workout-container');
-            container.innerHTML = '';
+            const s = app.data.activeSession;
+            document.getElementById('session-title').innerText = s.name;
+            const c = document.getElementById('session-container');
+            c.innerHTML = '';
 
-            WORKOUT_DATA.forEach(day => {
-                const dayEl = document.createElement('div');
-                dayEl.className = 'workout-day';
+            s.exercises.forEach((ex, exIdx) => {
+                let badge = ex.suggestion ? `<div class="badge-suggestion">🏆 Meta: ${ex.suggestion}kg</div>` : '';
                 
-                // Calculate progress for header
-                dayEl.innerHTML = `
-                    <div class="day-header">
-                        <div class="day-title"><i class="fas ${day.icon}" style="color:var(--primary); margin-right:10px;"></i>${day.title}</div>
+                let coachData = { tip: "", tempo: "" };
+                for(const key in COACHING_DB) {
+                    if(ex.name.includes(key)) coachData = COACHING_DB[key];
+                }
+                let tipHtml = coachData.tip ? `<div class="subtitle" style="color:var(--primary); font-size:0.75rem; margin-bottom:5px;"><i class="fas fa-lightbulb"></i> ${coachData.tip}</div>` : '';
+
+                let rows = '';
+                ex.sets.forEach((set, setIdx) => {
+                    const w = parseFloat(set.w) || parseFloat(set.ghost) || 0;
+                    const r = parseFloat(set.r) || 0;
+                    const rm = (w && r) ? Math.round(w * (1 + r/30)) : 0;
+                    const rmBadge = rm > 0 ? `<div class="badge-1rm">1RM: ${rm}</div>` : '';
+
+                    rows += `
+                    <div class="input-row">
+                        <span style="color:#444; font-size:0.8rem; text-align:center;">${setIdx+1}</span>
+                        <div class="input-wrapper">
+                            ${rmBadge}
+                            <input type="number" class="smart-input" placeholder="${set.ghost || '-'}" value="${set.w}"
+                                oninput="app.session.update(${exIdx}, ${setIdx}, 'w', this.value); app.session.render1RM(this)">
+                            <i class="fas fa-compact-disc input-tool-icon" onclick="app.tools.showPlates(${set.w || set.ghost || 0})"></i>
+                        </div>
+                        <div class="input-wrapper">
+                             <input type="number" class="smart-input" placeholder="Reps" value="${set.r}"
+                             oninput="app.session.update(${exIdx}, ${setIdx}, 'r', this.value); app.session.render1RM(this)">
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="number" class="rpe-input" placeholder="RPE" value="${set.rpe}" 
+                            oninput="app.session.update(${exIdx}, ${setIdx}, 'rpe', this.value)">
+                        </div>
+                        <div class="checkbox ${set.done ? 'checked' : ''}" onclick="app.session.toggle(${exIdx}, ${setIdx})">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>`;
+                });
+
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <div>
+                            <h3>${ex.name} ${coachData.tempo ? `<span style="font-size:0.65rem; color:var(--purple); border:1px solid var(--purple); padding:2px 4px; border-radius:4px;">${coachData.tempo}</span>` : ''}</h3>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-icon" onclick="app.session.swap(${exIdx})"><i class="fas fa-rotate"></i></button>
+                            <button class="btn-ghost" onclick="app.session.addSet(${exIdx})">+ Set</button>
+                        </div>
                     </div>
-                `;
-
-                day.exercises.forEach(ex => {
-                    const exCard = document.createElement('div');
-                    exCard.className = 'exercise-card';
-                    exCard.dataset.id = ex.id;
-                    
-                    // Header
-                    exCard.innerHTML = `
-                        <div class="exercise-header" onclick="app.ui.toggleAccordion(this)">
-                            <div class="ex-info">
-                                <h3>${ex.name}</h3>
-                                <div class="ex-meta">
-                                    <span>${ex.sets} x ${ex.reps}</span>
-                                    <span class="volume-tag hidden" id="vol-${ex.id}">0 kg</span>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-down chevron"></i>
-                        </div>
-                        <div class="exercise-body">
-                            <div class="ex-content-inner">
-                                <div class="visual-guide">
-                                    <div class="visual-svg">
-                                        <svg viewBox="0 0 100 100">
-                                            <rect width="100" height="100" fill="none" />
-                                            <circle cx="50" cy="50" r="40" class="svg-body" />
-                                            <path d="M30 50 L70 50" class="svg-bar" />
-                                        </svg>
-                                    </div>
-                                    <div class="visual-text">${ex.guide}</div>
-                                </div>
-                                
-                                <div class="sets-container" id="sets-${ex.id}">
-                                    <div class="set-header-row">
-                                        <span>#</span>
-                                        <span>KG</span>
-                                        <span>REPS</span>
-                                        <span>OK</span>
-                                        <span></span>
-                                    </div>
-                                    </div>
-
-                                <div class="action-row">
-                                    <button class="btn btn-outline" onclick="app.ui.addSet('${ex.id}', '${ex.type}')">
-                                        <i class="fas fa-plus"></i> Añadir Serie
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    dayEl.appendChild(exCard);
-                    
-                    // Render saved sets or default sets
-                    const savedSets = app.state.active[ex.id];
-                    const setsToRender = savedSets ? savedSets.length : ex.sets;
-                    
-                    setTimeout(() => {
-                        const setContainer = exCard.querySelector(`#sets-${ex.id}`);
-                        for(let i=0; i<setsToRender; i++) {
-                            const savedData = savedSets ? savedSets[i] : null;
-                            setContainer.appendChild(app.ui.createSetRow(ex.id, i+1, ex.type, savedData));
-                        }
-                        app.ui.updateVolumeDisplay(ex.id);
-                    }, 0);
-                });
-
-                container.appendChild(dayEl);
+                    ${tipHtml}
+                    ${badge}
+                    <div style="display:grid; grid-template-columns: 24px 1.2fr 1fr 0.6fr 44px; gap:8px; margin:10px 0 5px 0; font-size:0.65rem; color:#666; text-align:center;">
+                        <span>#</span><span>KG</span><span>REPS</span><span>RPE</span><span>OK</span>
+                    </div>
+                    ${rows}`;
+                c.appendChild(div);
             });
         },
 
-        toggleAccordion(header) {
-            const card = header.parentElement;
-            card.classList.toggle('open');
-            card.classList.toggle('active');
-        },
+        render1RM(inputEl) { /* Trigger refresh if needed */ },
 
-        createSetRow(exId, index, type, data = null) {
-            const row = document.createElement('div');
-            row.className = 'set-row';
-            row.dataset.index = index;
-            
-            // Get history
-            const history = app.logic.getHistory(exId, index-1);
-            let histText = "";
-            let prClass = "";
-            if(history) {
-                 histText = `${history.w}kg x ${history.r}`;
-            }
-
-            const valWeight = data ? data.w : '';
-            const valReps = data ? data.r : '';
-            const isChecked = data ? data.c : false;
-
-            row.innerHTML = `
-                <div class="prev-data">
-                    ${histText ? '<i class="fas fa-history"></i> ' + histText : 'Nueva serie'} 
-                    <span class="pr-badge badge badge-primary">RÉCORD</span>
-                </div>
-                <div class="set-num">${index}</div>
-                <div class="input-wrapper" data-unit="kg">
-                    <input type="number" class="inp-weight" value="${valWeight}" placeholder="-">
-                </div>
-                <div class="input-wrapper" data-unit="${type === 'time' ? 's' : 'rep'}">
-                    <input type="number" class="inp-reps" value="${valReps}" placeholder="-">
-                </div>
-                <div class="check-wrapper">
-                    <input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''}>
-                </div>
-                <button class="btn-delete" title="Borrar serie"><i class="fas fa-trash"></i></button>
-            `;
-
-            // Event Listeners
-            const inputs = row.querySelectorAll('input');
-            inputs.forEach(inp => inp.addEventListener('input', () => {
-                app.ui.saveSetState(exId);
-                app.ui.checkPR(row, history);
-                app.ui.updateVolumeDisplay(exId);
-            }));
-
-            const checkbox = row.querySelector('.custom-checkbox');
-            checkbox.addEventListener('change', (e) => {
-                row.classList.toggle('completed', e.target.checked);
-                app.ui.saveSetState(exId);
-                app.ui.updateVolumeDisplay(exId);
-                if(e.target.checked) app.timer.startRest();
-            });
-
-            row.querySelector('.btn-delete').addEventListener('click', () => {
-                if(confirm('¿Borrar serie?')) {
-                    row.remove();
-                    app.ui.reindexSets(exId);
-                    app.ui.saveSetState(exId);
-                }
-            });
-            
-            // Initial check
-            if(valWeight && history) app.ui.checkPR(row, history);
-
-            return row;
-        },
-
-        addSet(exId, type) {
-            const container = document.getElementById(`sets-${exId}`);
-            const newIndex = container.querySelectorAll('.set-row').length + 1;
-            container.appendChild(this.createSetRow(exId, newIndex, type));
-        },
-
-        reindexSets(exId) {
-            const container = document.getElementById(`sets-${exId}`);
-            const rows = container.querySelectorAll('.set-row');
-            rows.forEach((row, idx) => {
-                row.querySelector('.set-num').textContent = idx + 1;
-                row.dataset.index = idx + 1;
-            });
-        },
-
-        saveSetState(exId) {
-            const container = document.getElementById(`sets-${exId}`);
-            const rows = container.querySelectorAll('.set-row');
-            const setsData = [];
-            
-            rows.forEach(row => {
-                setsData.push({
-                    w: row.querySelector('.inp-weight').value,
-                    r: row.querySelector('.inp-reps').value,
-                    c: row.querySelector('.custom-checkbox').checked
-                });
-            });
-            
-            app.state.active[exId] = setsData;
-            // Debounce save handled by interval, but ensure state is updated
-        },
-
-        checkPR(row, history) {
-            if(!history) return;
-            const currentW = parseFloat(row.querySelector('.inp-weight').value) || 0;
-            const currentR = parseFloat(row.querySelector('.inp-reps').value) || 0;
-            const histW = parseFloat(history.w) || 0;
-            const badge = row.querySelector('.pr-badge');
-            
-            if(currentW > histW) {
-                badge.textContent = "PR PESO 🏆";
-                badge.classList.add('show');
-            } else if (currentW === histW && currentR > parseFloat(history.r)) {
-                badge.textContent = "+ REPS 🔥";
-                badge.classList.add('show');
-            } else {
-                badge.classList.remove('show');
+        update(ei, si, k, v) { app.data.activeSession.exercises[ei].sets[si][k] = v; },
+        
+        toggle(ei, si) {
+            const set = app.data.activeSession.exercises[ei].sets[si];
+            set.done = !set.done;
+            this.render();
+            if (set.done) {
+                if (navigator.vibrate) navigator.vibrate(50);
+                app.timer.start(90);
             }
         },
 
-        updateVolumeDisplay(exId) {
-            const vol = app.logic.calculateVolume(exId);
-            const badge = document.getElementById(`vol-${exId}`);
-            if(vol > 0) {
-                badge.textContent = `${vol} kg Vol`;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+        addSet(ei) {
+            const ex = app.data.activeSession.exercises[ei];
+            const last = ex.sets[ex.sets.length-1];
+            ex.sets.push({ w: '', r: '', rpe: '', ghost: last?.ghost||'', done: false });
+            this.render();
+        },
+
+        swap(ei) {
+            const current = app.data.activeSession.exercises[ei].name;
+            const alts = SUBSTITUTES[current];
+            if (!alts) return alert("No hay variantes predefinidas. Usa 'Añadir Ejercicio'.");
+            const choice = prompt(`Cambiar ${current} por:\n` + alts.join('\n- '));
+            if (choice) {
+                app.data.activeSession.exercises[ei].name = choice;
+                app.data.activeSession.exercises[ei].suggestion = null; 
+                this.render();
+            }
+        },
+
+        addExercisePrompt() {
+            const n = prompt("Nombre:");
+            if (n) {
+                app.data.activeSession.exercises.push({ name: n, suggestion: null, sets: [{w:'',r:'',done:false},{w:'',r:'',done:false},{w:'',r:'',done:false}] });
+                this.render();
+            }
+        },
+
+        finish() {
+            if (!confirm("¿Finalizar?")) return;
+            const s = app.data.activeSession;
+            let vol = 0;
+            
+            const cleanEx = s.exercises.map(ex => {
+                const valid = ex.sets.filter(x => x.done);
+                valid.forEach(x => {
+                    const w = parseFloat(x.w) || parseFloat(x.ghost) || 0;
+                    const r = parseFloat(x.r) || 0;
+                    vol += w * r;
+                    x.w = w; 
+                });
+                return { name: ex.name, sets: valid };
+            }).filter(e => e.sets.length > 0);
+
+            if (cleanEx.length > 0) {
+                app.data.history.push({ date: Date.now(), routine: s.name, vol, exercises: cleanEx });
+                app.data.user.xp += (vol / 100);
+                app.data.user.totalVolume += vol;
+                app.data.user.level = Math.floor(Math.sqrt(app.data.user.xp / 50)) + 1;
+                app.achievements.check();
+                app.save();
+                confetti();
+                
+                // Show Share Modal
+                app.utils.showShare(s.name, vol, cleanEx.length);
+            }
+
+            app.data.activeSession = null;
+            app.nav.go('home');
+            document.getElementById('main-nav').classList.remove('hidden');
+            app.home.render();
+        },
+
+        minimize() {
+            if (confirm("¿Salir sin guardar?")) {
+                app.data.activeSession = null;
+                app.nav.go('home');
+                document.getElementById('main-nav').classList.remove('hidden');
             }
         }
     },
 
+    // --- ACHIEVEMENTS ---
+    achievements: {
+        check() {
+            const u = app.data.user;
+            const h = app.data.history;
+            ACHIEVEMENTS.forEach(a => {
+                if (!app.data.unlocked.includes(a.id)) {
+                    if (a.cond(u, h)) {
+                        app.data.unlocked.push(a.id);
+                        alert(`🏆 LOGRO DESBLOQUEADO: ${a.title}`);
+                    }
+                }
+            });
+        },
+        render() {
+            const grid = document.getElementById('achievements-list');
+            grid.innerHTML = '';
+            ACHIEVEMENTS.forEach(a => {
+                const unlocked = app.data.unlocked.includes(a.id);
+                const div = document.createElement('div');
+                div.className = `trophy-card ${unlocked ? 'unlocked' : ''}`;
+                div.innerHTML = `<span class="trophy-icon">${a.icon}</span><div style="font-weight:700; font-size:0.9rem;">${a.title}</div><div class="subtitle">${a.desc}</div>`;
+                grid.appendChild(div);
+            });
+        }
+    },
+
+    // --- PROFILE ---
+    profile: {
+        render() {
+            document.getElementById('edit-name').value = app.data.user.name;
+            document.getElementById('edit-weight').value = app.data.user.weight;
+        },
+        update() {
+            app.data.user.name = document.getElementById('edit-name').value;
+            app.data.user.weight = document.getElementById('edit-weight').value;
+            app.save();
+            alert("Perfil Actualizado");
+        }
+    },
+
+    // --- TOOLS ---
     timer: {
-        interval: null,
-        startRest() {
-            // Only start if not already running or ask to restart?
-            // Simple version: Auto start
-            this.stop();
-            app.state.timerVal = app.state.settings.restTime;
-            this.updateDisplay();
-            document.getElementById('rest-timer').classList.add('show');
-            
-            this.interval = setInterval(() => {
-                app.state.timerVal--;
-                this.updateDisplay();
-                if(app.state.timerVal <= 0) {
-                    this.stop();
-                    // Play sound or vibrate here in a real app
-                    alert("¡Descanso terminado!"); 
-                }
-            }, 1000);
+        int: null,
+        start(sec) {
+            clearInterval(this.int);
+            let s = sec;
+            document.getElementById('active-timer').classList.add('show');
+            const tick = () => {
+                const m = Math.floor(s/60).toString().padStart(2,'0');
+                const ss = (s%60).toString().padStart(2,'0');
+                document.getElementById('timer-text').innerText = `${m}:${ss}`;
+                if (s <= 0) this.stop();
+                s--;
+            };
+            tick();
+            this.int = setInterval(tick, 1000);
         },
-        add(seconds) {
-            app.state.timerVal += seconds;
-            this.updateDisplay();
-        },
-        stop() {
-            clearInterval(this.interval);
-            document.getElementById('rest-timer').classList.remove('show');
-        },
-        updateDisplay() {
-            const m = Math.floor(app.state.timerVal / 60).toString().padStart(2,'0');
-            const s = (app.state.timerVal % 60).toString().padStart(2,'0');
-            document.getElementById('timer-val').textContent = `${m}:${s}`;
+        stop() { clearInterval(this.int); document.getElementById('active-timer').classList.remove('show'); }
+    },
+
+    tools: {
+        showPlates(w) {
+            const d = document.getElementById('plate-vis');
+            d.innerHTML = '';
+            let val = (w - 20) / 2;
+            if (val <= 0) { d.innerHTML = '<span style="color:#666">Barra Vacía</span>'; }
+            else {
+                [20,15,10,5,2.5,1.25].forEach(p => {
+                    const colors = {20:'#ef4444',15:'#3b82f6',10:'#10b981',5:'#fff',2.5:'#6b7280',1.25:'#a1a1aa'};
+                    while(val >= p) {
+                        const el = document.createElement('div');
+                        el.style.cssText = `height:${40+p*1.5}px;width:${8+p/2}px;background:${colors[p]};border-radius:2px;`;
+                        d.appendChild(el); val -= p;
+                    }
+                });
+            }
+            document.getElementById('modal-plates').style.display = 'flex';
         }
     },
 
-    storage: {
-        save() {
-            localStorage.setItem('protracker_v2', JSON.stringify(app.state));
+    // --- UTILS ---
+    utils: {
+        getLastLog(name) {
+            if (!app.data.history) return null;
+            for(let i=app.data.history.length-1; i>=0; i--) {
+                const ex = app.data.history[i].exercises.find(e => e.name === name);
+                if (ex) return ex;
+            }
+            return null;
         },
-        load() {
-            const stored = localStorage.getItem('protracker_v2');
-            if(stored) {
-                const parsed = JSON.parse(stored);
-                // Merge to ensure structure integrity
-                app.state = { ...app.state, ...parsed };
-                // Reset timer on reload
-                app.state.timer = null;
-                app.state.timerVal = 0;
+        showShare(name, vol, exs) {
+            const modal = document.getElementById('modal-share');
+            const txt = document.getElementById('share-text');
+            txt.value = `🚀 TITAN OS WORKOUT\n\n📌 Rutina: ${name}\n🏋️ Volumen: ${vol}kg\n⚡ Ejercicios: ${exs}\n\nConquistado con Titan OS.`;
+            modal.style.display = 'flex';
+        },
+        copyShare() {
+            const t = document.getElementById('share-text');
+            t.select();
+            document.execCommand('copy');
+            alert("Copiado!");
+            document.getElementById('modal-share').style.display = 'none';
+        }
+    },
+
+    routines: {
+        create() {
+            const n = prompt("Nombre de Rutina:");
+            if (n) {
+                app.data.routines.push({ id: 'custom_'+Date.now(), name: n, exercises: [] });
+                app.save();
+                app.home.render();
             }
         }
+    },
+
+    nav: {
+        go(id) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-'+id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if(id === 'home') document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            if(id === 'history') {
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                app.history.render();
+            }
+            if(id === 'achievements') {
+                document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                app.achievements.render();
+            }
+            if(id === 'profile') {
+                document.querySelectorAll('.nav-btn')[3].classList.add('active');
+                app.profile.render();
+            }
+        }
+    },
+
+    history: {
+        render() {
+            const l = document.getElementById('history-list');
+            l.innerHTML = '';
+            const h = [...(app.data.history || [])].reverse();
+            if (h.length === 0) l.innerHTML = '<div style="text-align:center; color:#666">Sin datos</div>';
+            h.forEach(s => {
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `<div style="display:flex; justify-content:space-between;"><div><strong>${s.routine}</strong><div class="subtitle">${new Date(s.date).toLocaleDateString()}</div></div><div><strong>${(s.vol/1000).toFixed(1)}k</strong></div></div>`;
+                l.appendChild(el);
+            });
+        }
+    },
+
+    data: {
+        export() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(app.data));
+            const a = document.createElement('a'); a.href = dataStr; a.download = "titan_omega_backup.json"; a.click();
+        },
+        import(input) {
+            const fr = new FileReader();
+            fr.onload = e => { app.data = JSON.parse(e.target.result); app.save(); location.reload(); };
+            fr.readAsText(input.files[0]);
+        },
+        reset() { if(confirm("¿Borrar todo?")) { localStorage.clear(); location.reload(); } }
     }
 };
 
-// Start App
-document.addEventListener('DOMContentLoaded', () => {
-    app.init();
-});
-
+window.onload = () => app.init();
 </script>
 </body>
 </html>
