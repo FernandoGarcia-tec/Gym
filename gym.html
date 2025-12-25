@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>PRO-Tracker V2 | Elite Hypertrophy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    :root {
+      /* Palette - Dark Mode Default logic implied, but variables handled for switching */
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.5);
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      
+      --bg-body: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #334155;
+      --border: #334155;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --nav-height: 70px;
+    }
+
+    /* Light Mode Overrides */
+    body.light-mode {
+      --bg-body: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-input: #f1f5f9;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      padding-bottom: 140px; /* Space for floating nav */
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* --- Typography & Utils --- */
+    h1, h2, h3 { margin: 0; letter-spacing: -0.03em; }
+    .badge {
+      display: inline-flex; align-items: center; padding: 4px 8px;
+      border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .badge-primary { background: rgba(59, 130, 246, 0.15); color: var(--primary); }
+    
+    /* --- Header --- */
+    .app-header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    body.light-mode .app-header { background: rgba(255, 255, 255, 0.85); }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon { 
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), #6366f1);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;
+      font-size: 1.2rem; box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .brand-text h1 { font-size: 1.25rem; font-weight: 800; }
+    .brand-text span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; display: block; }
+
+    .header-actions button {
+      background: transparent; border: none; color: var(--text-main); font-size: 1.2rem; cursor: pointer; padding: 8px;
+    }
+
+    /* --- Container --- */
+    .container { max-width: 800px; margin: 0 auto; padding: 20px 16px; }
+
+    /* --- Info Cards --- */
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .stat-card h2 { font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .stat-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+    /* --- Workout Day Section --- */
+    .workout-day { margin-bottom: 32px; animation: slideUp 0.6s ease-out; }
+    .day-header { 
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; 
+    }
+    .day-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+    .day-progress { font-size: 0.9rem; color: var(--primary); font-weight: 600; }
+
+    /* --- Exercises --- */
+    .exercise-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 16px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .exercise-card.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+    
+    .exercise-header {
+      padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(to right, transparent, rgba(59, 130, 246, 0.02));
+    }
+    .ex-info h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .ex-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; }
+    .volume-tag { font-size: 0.75rem; color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; }
+
+    .chevron { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-muted); }
+    .exercise-card.open .chevron { transform: rotate(180deg); color: var(--primary); }
+
+    .exercise-body { 
+      max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0;
+    }
+    .exercise-card.open .exercise-body { max-height: 1200px; opacity: 1; }
+
+    .ex-content-inner { padding: 0 20px 20px; }
+
+    /* --- Visuals (SVG) --- */
+    .visual-guide {
+      display: flex; gap: 16px; margin: 16px 0; background: var(--bg-body);
+      padding: 12px; border-radius: var(--radius-md); align-items: center;
+    }
+    .visual-svg { width: 70px; height: 70px; flex-shrink: 0; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); padding: 4px; }
+    .visual-svg svg { width: 100%; height: 100%; }
+    .visual-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; flex: 1; }
+    
+    /* SVG Styling */
+    .svg-bar { stroke: var(--text-main); stroke-width: 4; stroke-linecap: round; }
+    .svg-body { fill: var(--text-muted); opacity: 0.5; }
+    .svg-highlight { fill: var(--primary); }
+    .svg-bench { fill: var(--border); }
+
+    /* --- Sets Table --- */
+    .sets-container { margin-top: 10px; }
+    .set-header-row {
+      display: grid; grid-template-columns: 30px 1fr 1fr 40px 30px; gap: 8px;
+      margin-bottom: 8px; font-size: 0.75rem; color: var(--text-muted); text-align: center; font-weight: 600;
+    }
+
+    .set-row {
+      display: grid; grid-template-columns: 30px 1fr 1fr 40px 30px; gap: 8px;
+      align-items: center; margin-bottom: 8px; animation: fadeIn 0.3s;
+      position: relative;
+    }
+    
+    .set-num { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-align: center; }
+    
+    .input-wrapper { position: relative; }
+    .input-wrapper input {
+      width: 100%; background: var(--bg-input); border: 1px solid transparent;
+      color: var(--text-main); padding: 10px 0; text-align: center; font-weight: 600; font-size: 1rem;
+      border-radius: var(--radius-sm); transition: all 0.2s;
+    }
+    .input-wrapper input:focus { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+    .input-wrapper::after {
+      content: attr(data-unit); position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      font-size: 0.7rem; color: var(--text-muted); opacity: 0.5; pointer-events: none;
+    }
+
+    /* Checkbox Styles */
+    .check-wrapper { display: flex; justify-content: center; align-items: center; }
+    .custom-checkbox {
+      appearance: none; width: 28px; height: 28px; border: 2px solid var(--border);
+      border-radius: 8px; cursor: pointer; position: relative; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: var(--bg-input);
+    }
+    .custom-checkbox:checked { background: var(--success); border-color: var(--success); transform: scale(1.05); }
+    .custom-checkbox::before {
+      content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+      color: white; font-size: 14px; transition: transform 0.2s;
+    }
+    .custom-checkbox:checked::before { transform: translate(-50%, -50%) scale(1); }
+
+    /* Delete Button */
+    .btn-delete {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; opacity: 0.5; transition: opacity 0.2s;
+    }
+    .btn-delete:hover { color: var(--danger); opacity: 1; }
+
+    .prev-data { 
+      grid-column: 1 / -1; font-size: 0.75rem; color: var(--text-muted); 
+      margin-top: -4px; margin-bottom: 8px; padding-left: 38px; font-style: italic; display: flex; gap: 8px;
+    }
+    .pr-badge { color: var(--warning); font-weight: 700; display: none; }
+    .pr-badge.show { display: inline; animation: popIn 0.5s; }
+
+    /* --- Actions --- */
+    .action-row { margin-top: 16px; display: flex; gap: 12px; }
+    .btn {
+      padding: 12px 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.9rem;
+      border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.1s, filter 0.2s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); width: 100%; justify-content: center; }
+    .btn-outline:hover { background: var(--bg-input); }
+    
+    /* --- Floating Nav --- */
+    .floating-nav {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 12px; border-radius: 50px;
+      display: flex; gap: 8px; align-items: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      width: max-content;
+    }
+    body.light-mode .floating-nav { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.05); }
+
+    .nav-btn {
+      width: 44px; height: 44px; border-radius: 50%; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+      background: transparent; color: var(--text-muted);
+    }
+    .nav-btn.active { background: var(--bg-body); color: var(--text-main); }
+    .nav-btn.primary { background: var(--primary); color: white; width: 50px; height: 50px; box-shadow: 0 4px 12px var(--primary-glow); transform: translateY(-4px); }
+    .nav-btn.primary:hover { transform: translateY(-6px); box-shadow: 0 6px 16px var(--primary-glow); }
+
+    /* --- Timer Overlay --- */
+    .timer-overlay {
+      position: fixed; bottom: 100px; right: 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      padding: 12px 20px; border-radius: var(--radius-lg);
+      display: flex; align-items: center; gap: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transform: translateY(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 90;
+    }
+    .timer-overlay.show { transform: translateY(0); }
+    .timer-display { font-family: 'Courier New', monospace; font-weight: 700; font-size: 1.2rem; color: var(--text-main); }
+    .timer-controls button { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+    .timer-controls button:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* --- Animations --- */
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+    /* --- Utilities --- */
+    .hidden { display: none !important; }
+
+  </style>
+</head>
+<body class="dark-mode">
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon"><i class="fas fa-dumbbell"></i></div>
+      <div class="brand-text">
+        <h1>PRO-Tracker</h1>
+        <span>Elite Hypertrophy</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="theme-toggle"><i class="fas fa-sun"></i></button>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <div class="stat-card">
+      <h2><i class="fas fa-chart-line" style="color:var(--success)"></i> Progreso Semanal</h2>
+      <p>Has completado <strong>0</strong> de <strong>5</strong> sesiones esta semana. La consistencia es la clave del crecimiento.</p>
+      <div style="height: 6px; background: var(--bg-input); border-radius: 3px; margin-top: 12px; overflow: hidden;">
+        <div id="weekly-progress-bar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.5s;"></div>
+      </div>
+    </div>
+
+    <div id="workout-container">
+      </div>
+
+  </div>
+
+  <div class="floating-nav">
+    <button class="nav-btn" onclick="app.ui.scrollToTop()"><i class="fas fa-arrow-up"></i></button>
+    <button class="nav-btn primary" id="btn-finish-workout"><i class="fas fa-check"></i></button>
+    <button class="nav-btn" id="btn-settings"><i class="fas fa-cog"></i></button>
+  </div>
+
+  <div class="timer-overlay" id="rest-timer">
+    <i class="fas fa-stopwatch" style="color: var(--primary)"></i>
+    <span class="timer-display" id="timer-val">00:00</span>
+    <div class="timer-controls">
+      <button onclick="app.timer.add(10)">+10</button>
+      <button onclick="app.timer.stop()"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+<script>
+/**
+ * DATA DEFINITION
+ * Defined as a structured object for easier editing and expansion.
+ */
+const WORKOUT_DATA = [
+  {
+    id: "day1",
+    title: "Día 1: Torso - Fuerza",
+    icon: "fa-chess-king",
+    exercises: [
+      { id: "bench", name: "Press de Banca", sets: 4, reps: "5-8", type: "weight", guide: "Baja controlando 3 segs, explota al subir." },
+      { id: "row", name: "Remo Pendlay", sets: 3, reps: "6-10", type: "weight", guide: "Torso paralelo al suelo, sin inercia." },
+      { id: "ohp", name: "Press Militar", sets: 3, reps: "6-10", type: "weight", guide: "Aprieta glúteos y abdomen." },
+      { id: "dips", name: "Fondos", sets: 3, reps: "8-12", type: "weight", guide: "Inclínate para pecho, vertical para tríceps." },
+      { id: "facepull", name: "Face Pulls", sets: 3, reps: "12-15", type: "weight", guide: "Rotación externa al final del movimiento." }
+    ]
+  },
+  {
+    id: "day2",
+    title: "Día 2: Pierna - Fuerza",
+    icon: "fa-bolt",
+    exercises: [
+      { id: "squat", name: "Sentadilla Libre", sets: 4, reps: "5-8", type: "weight", guide: "Rompe la paralela." },
+      { id: "rdl", name: "Peso Muerto Rumano", sets: 3, reps: "8-10", type: "weight", guide: "Cadera atrás, siente el estiramiento." },
+      { id: "legpress", name: "Prensa", sets: 3, reps: "10-12", type: "weight", guide: "No bloquees rodillas." },
+      { id: "plank", name: "Plancha", sets: 3, reps: "MAX", type: "time", guide: "Cuerpo como una tabla recta." }
+    ]
+  },
+  {
+    id: "day4",
+    title: "Día 4: Torso - Hipertrofia",
+    icon: "fa-layer-group",
+    exercises: [
+      { id: "pullup", name: "Dominadas", sets: 4, reps: "8-12", type: "weight", guide: "Rango completo de movimiento." },
+      { id: "incpress", name: "Press Inclinado", sets: 3, reps: "10-15", type: "weight", guide: "Mancuernas a 30 grados." },
+      { id: "latraise", name: "Elevaciones Laterales", sets: 4, reps: "12-20", type: "weight", guide: "Codos lideran el movimiento." },
+      { id: "curl", name: "Curl Bíceps", sets: 3, reps: "10-15", type: "weight", guide: "Codos pegados al cuerpo." }
+    ]
+  },
+  {
+      id: "day5",
+      title: "Día 5: Pierna - Hipertrofia",
+      icon: "fa-running",
+      exercises: [
+        { id: "hacksquat", name: "Sentadilla Hack", sets: 4, reps: "10-12", type: "weight", guide: "Profundidad máxima." },
+        { id: "legcurl", name: "Curl Femoral", sets: 4, reps: "12-15", type: "weight", guide: "Contrae 1 segundo arriba." },
+        { id: "lunges", name: "Zancadas", sets: 3, reps: "20", type: "weight", guide: "Pasos largos." }
+      ]
+  }
+];
+
+const app = {
+    state: {
+        active: {}, // Current session data
+        history: {}, // Past sessions
+        timer: null,
+        timerVal: 0,
+        settings: {
+            restTime: 90, // seconds
+            theme: 'dark'
+        }
+    },
+
+    init() {
+        this.storage.load();
+        this.ui.render();
+        this.ui.applyTheme();
+        
+        // Listeners
+        document.getElementById('theme-toggle').addEventListener('click', () => this.ui.toggleTheme());
+        document.getElementById('btn-finish-workout').addEventListener('click', () => this.logic.finishWorkout());
+        document.getElementById('btn-settings').addEventListener('click', () => alert('Configuración próximamente: Exportar datos, cambiar tiempos de descanso.'));
+        
+        // Auto-save loop
+        setInterval(() => this.storage.save(), 5000);
+    },
+
+    logic: {
+        getHistory(exId, setIdx) {
+            // Returns the last performed data for this specific set/exercise
+            // For simplicity, just looks at the last saved session in history
+            const dates = Object.keys(app.state.history).sort().reverse();
+            if (dates.length === 0) return null;
+            
+            const lastSession = app.state.history[dates[0]];
+            if (!lastSession || !lastSession[exId]) return null;
+            
+            return lastSession[exId][setIdx] || null;
+        },
+
+        calculateVolume(exId) {
+            const container = document.querySelector(`.exercise-card[data-id="${exId}"]`);
+            if(!container) return 0;
+            let vol = 0;
+            container.querySelectorAll('.set-row').forEach(row => {
+                if(row.querySelector('.custom-checkbox').checked) {
+                    const w = parseFloat(row.querySelector('.inp-weight').value) || 0;
+                    const r = parseFloat(row.querySelector('.inp-reps').value) || 0;
+                    vol += (w * r);
+                }
+            });
+            return vol;
+        },
+
+        finishWorkout() {
+            if(confirm("¿Finalizar y guardar entrenamiento?")) {
+                const today = new Date().toISOString().split('T')[0];
+                app.state.history[today] = JSON.parse(JSON.stringify(app.state.active));
+                app.state.active = {}; // Reset current
+                app.storage.save();
+                
+                // Celebration
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                setTimeout(() => location.reload(), 2000);
+            }
+        }
+    },
+
+    ui: {
+        toggleTheme() {
+            app.state.settings.theme = app.state.settings.theme === 'dark' ? 'light' : 'dark';
+            this.applyTheme();
+            app.storage.save();
+        },
+        
+        applyTheme() {
+            document.body.className = app.state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
+            const icon = document.querySelector('#theme-toggle i');
+            icon.className = app.state.settings.theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        },
+
+        scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); },
+
+        render() {
+            const container = document.getElementById('workout-container');
+            container.innerHTML = '';
+
+            WORKOUT_DATA.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'workout-day';
+                
+                // Calculate progress for header
+                dayEl.innerHTML = `
+                    <div class="day-header">
+                        <div class="day-title"><i class="fas ${day.icon}" style="color:var(--primary); margin-right:10px;"></i>${day.title}</div>
+                    </div>
+                `;
+
+                day.exercises.forEach(ex => {
+                    const exCard = document.createElement('div');
+                    exCard.className = 'exercise-card';
+                    exCard.dataset.id = ex.id;
+                    
+                    // Header
+                    exCard.innerHTML = `
+                        <div class="exercise-header" onclick="app.ui.toggleAccordion(this)">
+                            <div class="ex-info">
+                                <h3>${ex.name}</h3>
+                                <div class="ex-meta">
+                                    <span>${ex.sets} x ${ex.reps}</span>
+                                    <span class="volume-tag hidden" id="vol-${ex.id}">0 kg</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </div>
+                        <div class="exercise-body">
+                            <div class="ex-content-inner">
+                                <div class="visual-guide">
+                                    <div class="visual-svg">
+                                        <svg viewBox="0 0 100 100">
+                                            <rect width="100" height="100" fill="none" />
+                                            <circle cx="50" cy="50" r="40" class="svg-body" />
+                                            <path d="M30 50 L70 50" class="svg-bar" />
+                                        </svg>
+                                    </div>
+                                    <div class="visual-text">${ex.guide}</div>
+                                </div>
+                                
+                                <div class="sets-container" id="sets-${ex.id}">
+                                    <div class="set-header-row">
+                                        <span>#</span>
+                                        <span>KG</span>
+                                        <span>REPS</span>
+                                        <span>OK</span>
+                                        <span></span>
+                                    </div>
+                                    </div>
+
+                                <div class="action-row">
+                                    <button class="btn btn-outline" onclick="app.ui.addSet('${ex.id}', '${ex.type}')">
+                                        <i class="fas fa-plus"></i> Añadir Serie
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    dayEl.appendChild(exCard);
+                    
+                    // Render saved sets or default sets
+                    const savedSets = app.state.active[ex.id];
+                    const setsToRender = savedSets ? savedSets.length : ex.sets;
+                    
+                    setTimeout(() => {
+                        const setContainer = exCard.querySelector(`#sets-${ex.id}`);
+                        for(let i=0; i<setsToRender; i++) {
+                            const savedData = savedSets ? savedSets[i] : null;
+                            setContainer.appendChild(app.ui.createSetRow(ex.id, i+1, ex.type, savedData));
+                        }
+                        app.ui.updateVolumeDisplay(ex.id);
+                    }, 0);
+                });
+
+                container.appendChild(dayEl);
+            });
+        },
+
+        toggleAccordion(header) {
+            const card = header.parentElement;
+            card.classList.toggle('open');
+            card.classList.toggle('active');
+        },
+
+        createSetRow(exId, index, type, data = null) {
+            const row = document.createElement('div');
+            row.className = 'set-row';
+            row.dataset.index = index;
+            
+            // Get history
+            const history = app.logic.getHistory(exId, index-1);
+            let histText = "";
+            let prClass = "";
+            if(history) {
+                 histText = `${history.w}kg x ${history.r}`;
+            }
+
+            const valWeight = data ? data.w : '';
+            const valReps = data ? data.r : '';
+            const isChecked = data ? data.c : false;
+
+            row.innerHTML = `
+                <div class="prev-data">
+                    ${histText ? '<i class="fas fa-history"></i> ' + histText : 'Nueva serie'} 
+                    <span class="pr-badge badge badge-primary">RÉCORD</span>
+                </div>
+                <div class="set-num">${index}</div>
+                <div class="input-wrapper" data-unit="kg">
+                    <input type="number" class="inp-weight" value="${valWeight}" placeholder="-">
+                </div>
+                <div class="input-wrapper" data-unit="${type === 'time' ? 's' : 'rep'}">
+                    <input type="number" class="inp-reps" value="${valReps}" placeholder="-">
+                </div>
+                <div class="check-wrapper">
+                    <input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''}>
+                </div>
+                <button class="btn-delete" title="Borrar serie"><i class="fas fa-trash"></i></button>
+            `;
+
+            // Event Listeners
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(inp => inp.addEventListener('input', () => {
+                app.ui.saveSetState(exId);
+                app.ui.checkPR(row, history);
+                app.ui.updateVolumeDisplay(exId);
+            }));
+
+            const checkbox = row.querySelector('.custom-checkbox');
+            checkbox.addEventListener('change', (e) => {
+                row.classList.toggle('completed', e.target.checked);
+                app.ui.saveSetState(exId);
+                app.ui.updateVolumeDisplay(exId);
+                if(e.target.checked) app.timer.startRest();
+            });
+
+            row.querySelector('.btn-delete').addEventListener('click', () => {
+                if(confirm('¿Borrar serie?')) {
+                    row.remove();
+                    app.ui.reindexSets(exId);
+                    app.ui.saveSetState(exId);
+                }
+            });
+            
+            // Initial check
+            if(valWeight && history) app.ui.checkPR(row, history);
+
+            return row;
+        },
+
+        addSet(exId, type) {
+            const container = document.getElementById(`sets-${exId}`);
+            const newIndex = container.querySelectorAll('.set-row').length + 1;
+            container.appendChild(this.createSetRow(exId, newIndex, type));
+        },
+
+        reindexSets(exId) {
+            const container = document.getElementById(`sets-${exId}`);
+            const rows = container.querySelectorAll('.set-row');
+            rows.forEach((row, idx) => {
+                row.querySelector('.set-num').textContent = idx + 1;
+                row.dataset.index = idx + 1;
+            });
+        },
+
+        saveSetState(exId) {
+            const container = document.getElementById(`sets-${exId}`);
+            const rows = container.querySelectorAll('.set-row');
+            const setsData = [];
+            
+            rows.forEach(row => {
+                setsData.push({
+                    w: row.querySelector('.inp-weight').value,
+                    r: row.querySelector('.inp-reps').value,
+                    c: row.querySelector('.custom-checkbox').checked
+                });
+            });
+            
+            app.state.active[exId] = setsData;
+            // Debounce save handled by interval, but ensure state is updated
+        },
+
+        checkPR(row, history) {
+            if(!history) return;
+            const currentW = parseFloat(row.querySelector('.inp-weight').value) || 0;
+            const currentR = parseFloat(row.querySelector('.inp-reps').value) || 0;
+            const histW = parseFloat(history.w) || 0;
+            const badge = row.querySelector('.pr-badge');
+            
+            if(currentW > histW) {
+                badge.textContent = "PR PESO 🏆";
+                badge.classList.add('show');
+            } else if (currentW === histW && currentR > parseFloat(history.r)) {
+                badge.textContent = "+ REPS 🔥";
+                badge.classList.add('show');
+            } else {
+                badge.classList.remove('show');
+            }
+        },
+
+        updateVolumeDisplay(exId) {
+            const vol = app.logic.calculateVolume(exId);
+            const badge = document.getElementById(`vol-${exId}`);
+            if(vol > 0) {
+                badge.textContent = `${vol} kg Vol`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    },
+
+    timer: {
+        interval: null,
+        startRest() {
+            // Only start if not already running or ask to restart?
+            // Simple version: Auto start
+            this.stop();
+            app.state.timerVal = app.state.settings.restTime;
+            this.updateDisplay();
+            document.getElementById('rest-timer').classList.add('show');
+            
+            this.interval = setInterval(() => {
+                app.state.timerVal--;
+                this.updateDisplay();
+                if(app.state.timerVal <= 0) {
+                    this.stop();
+                    // Play sound or vibrate here in a real app
+                    alert("¡Descanso terminado!"); 
+                }
+            }, 1000);
+        },
+        add(seconds) {
+            app.state.timerVal += seconds;
+            this.updateDisplay();
+        },
+        stop() {
+            clearInterval(this.interval);
+            document.getElementById('rest-timer').classList.remove('show');
+        },
+        updateDisplay() {
+            const m = Math.floor(app.state.timerVal / 60).toString().padStart(2,'0');
+            const s = (app.state.timerVal % 60).toString().padStart(2,'0');
+            document.getElementById('timer-val').textContent = `${m}:${s}`;
+        }
+    },
+
+    storage: {
+        save() {
+            localStorage.setItem('protracker_v2', JSON.stringify(app.state));
+        },
+        load() {
+            const stored = localStorage.getItem('protracker_v2');
+            if(stored) {
+                const parsed = JSON.parse(stored);
+                // Merge to ensure structure integrity
+                app.state = { ...app.state, ...parsed };
+                // Reset timer on reload
+                app.state.timer = null;
+                app.state.timerVal = 0;
+            }
+        }
+    }
+};
+
+// Start App
+document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+});
+
+</script>
+</body>
+</html>
